@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>銘勁汽車 ─ 簽呈產生器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #f9f8f6;
+    --border: #e2ddd8;
+    --border2: #cdc8c2;
+    --text: #1a1816;
+    --text2: #6b6560;
+    --text3: #9e9892;
+    --accent: #1a3a5c;
+    --accent-light: #e8eef5;
+    --accent-mid: #2d5a8a;
+    --red: #c0392b;
+    --green: #1e7e34;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --shadow: 0 1px 4px rgba(0,0,0,.08), 0 0 0 0.5px rgba(0,0,0,.06);
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 2px solid #0f2640;
+  }
+  .logo-mark {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; letter-spacing: -.5px;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 500; letter-spacing: .04em; }
+  header span { font-size: 12px; opacity: .6; margin-left: 8px; font-weight: 400; }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 1100px;
+    margin: 24px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 12px 18px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--surface2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-body { padding: 18px; }
+
+  /* ── Form ── */
+  .form-group { margin-bottom: 13px; }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 5px;
+    letter-spacing: .03em;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent-mid);
+    box-shadow: 0 0 0 3px rgba(45,90,138,.1);
+  }
+  .form-group textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6560'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    cursor: pointer;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .countersign-wrap { display: flex; align-items: center; gap: 10px; }
+  .countersign-wrap label.toggle {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text2); cursor: pointer;
+    font-weight: 400; white-space: nowrap; margin-bottom: 0;
+  }
+  .countersign-wrap input[type=checkbox] { width: auto; }
+  #countersign-dept { display: none; flex: 1; }
+
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── AI Button ── */
+  .ai-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    letter-spacing: .04em;
+    transition: background .15s, transform .1s;
+    margin-top: 6px;
+  }
+  .ai-btn:hover { background: var(--accent-mid); }
+  .ai-btn:active { transform: scale(.98); }
+  .ai-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-msg {
+    font-size: 11px;
+    margin-top: 7px;
+    min-height: 16px;
+    text-align: center;
+    color: var(--text3);
+  }
+  .status-msg.ok { color: var(--green); }
+  .status-msg.err { color: var(--red); }
+
+  /* ── Preview ── */
+  .preview-placeholder {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  /* ── Document ── */
+  .doc {
+    font-family: 'Noto Serif TC', '標楷體', 'KaiTi', serif;
+    font-size: 13.5px;
+    line-height: 2;
+    color: #111;
+    padding: 4px 0;
+  }
+  .doc-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #111;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .doc-company { font-size: 16px; font-weight: 700; letter-spacing: .06em; }
+  .doc-sub { font-size: 12px; color: #444; margin-top: 2px; }
+  .doc-date { font-size: 12px; color: #444; text-align: right; }
+  .doc-block { margin-bottom: 12px; }
+  .doc-field-label { font-weight: 700; display: inline; }
+  .doc-field-val { display: inline; margin-left: 1em; }
+  .doc-list { margin: 4px 0 0 0; padding: 0; list-style: none; }
+  .doc-list li { padding-left: 2em; text-indent: -2em; margin-bottom: 2px; }
+  .doc-closing { margin: 14px 0 10px; }
+  .doc-countersign { margin-bottom: 10px; }
+
+  .sign-section-label {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .sign-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .sign-table th, .sign-table td {
+    border: 1px solid #111;
+    text-align: center;
+    font-family: 'Noto Serif TC', serif;
+  }
+  .sign-table th { padding: 5px 8px; font-size: 12px; background: #f5f5f5; }
+  .sign-table td { padding: 22px 8px 5px; font-size: 11px; }
+
+  /* ── Print ── */
+  .print-btn {
+    padding: 5px 12px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: transparent;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 11px;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    transition: background .15s;
+  }
+  .print-btn:hover { background: var(--accent-light); color: var(--accent); }
+
+  @media print {
+    body { background: #fff; }
+    header, .form-side, .print-btn, .panel-head { display: none !important; }
+    .container { display: block; margin: 0; padding: 0; max-width: 100%; }
+    .preview-side { box-shadow: none; border: none; }
+    .panel-body { padding: 10px 0; }
+    .doc { font-size: 13px; }
+  }
+
+  @media (max-width: 780px) {
+    .container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">銘</div>
+  <div>
+    <h1>銘勁汽車股份有限公司<span>簽呈產生器</span></h1>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 左側表單 -->
+  <div class="panel form-side">
+    <div class="panel-head">簽呈資料填寫</div>
+    <div class="panel-body">
+
+      <div class="form-group row2">
+        <div>
+          <label>部門</label>
+          <select id="dept">
+            <option>顧關部</option>
+            <option>營業部</option>
+            <option>服務部</option>
+            <option>財管部</option>
+            <option>美容部</option>
+            <option>行政部</option>
+          </select>
+        </div>
+        <div>
+          <label>日期</label>
+          <input type="date" id="docdate">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>承辦人</label>
+        <input type="text" id="handler" placeholder="姓名">
+      </div>
+
+      <div class="form-group">
+        <label>主旨</label>
+        <input type="text" id="subject" placeholder="例：BUX-9117 大損贈小美容費用重擬">
+      </div>
+
+      <div class="form-group">
+        <label>事由草稿
+          <span class="hint" style="display:inline;font-weight:400">（口語化即可，AI 會潤稿成公文格式）</span>
+        </label>
+        <textarea id="draft" placeholder="例：12/15 八德廠有一台大損車，贈送小美容，原廠商兆鼎做不到標準，換成立日渼，費用從 2700 漲到 5000，差額需要補簽。外修單號 B251200003。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>會簽</label>
+        <div class="countersign-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="countersign-toggle"> 需要會簽
+          </label>
+          <input type="text" id="countersign-dept" placeholder="例：財管部">
+        </div>
+      </div>
+
+      <button class="ai-btn" id="generate-btn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        ✦ AI 潤稿 &amp; 產生簽呈
+      </button>
+      <p class="status-msg" id="status-msg"></p>
+
+    </div>
+  </div>
+
+  <!-- 右側預覽 -->
+  <div class="panel preview-side">
+    <div class="panel-head">
+      <span>簽呈預覽</span>
+      <button class="print-btn" onclick="window.print()">🖨 列印 / 存 PDF</button>
+    </div>
+    <div class="panel-body">
+      <div id="doc-output">
+        <div class="preview-placeholder">
+          填寫左側資料後<br>點擊「AI 潤稿 & 產生簽呈」<br>即可在此預覽正式公文格式
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 預設今天日期
+  document.getElementById('docdate').value = new Date().toISOString().slice(0,10);
+
+  // 會簽切換
+  document.getElementById('countersign-toggle').addEventListener('change', function(){
+    const el = document.getElementById('countersign-dept');
+    el.style.display = this.checked ? 'block' : 'none';
+    if(!this.checked) el.value = '';
+  });
+
+  async function generate(){
+    const dept        = document.getElementById('dept').value;
+    const date        = document.getElementById('docdate').value;
+    const handler     = document.getElementById('handler').value.trim();
+    const subject     = document.getElementById('subject').value.trim();
+    const draft       = document.getElementById('draft').value.trim();
+    const needCS      = document.getElementById('countersign-toggle').checked;
+    const csDept      = document.getElementById('countersign-dept').value.trim();
+
+    const statusEl = document.getElementById('status-msg');
+
+    if(!subject){ statusEl.textContent = '請填寫主旨'; statusEl.className = 'status-msg err'; return; }
+    if(!draft)  { statusEl.textContent = '請填寫事由草稿'; statusEl.className = 'status-msg err'; return; }
+
+    const btn     = document.getElementById('generate-btn');
+    const spinner = document.getElementById('spinner');
+    btn.disabled  = true;
+    spinner.style.display = 'block';
+    statusEl.textContent  = 'AI 潤稿中，請稍候...';
+    statusEl.className    = 'status-msg';
+
+    const prompt = `你是台灣汽車公司的行政文書助理，請將以下口語化事由草稿，改寫為正式繁體中文公文「說明」段落。
+
+要求：
+- 條列式，每條以「一、」「二、」「三、」開頭
+- 文字正式、簡潔，使用公文用語
+- 保留所有關鍵數字、車牌、單號、廠商名稱
+- 只輸出「說明」內容的條列清單，不要輸出其他文字、標題或說明
+
+草稿：${draft}`;
+
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      if(!resp.ok){
+        const err = await resp.json().catch(()=>({}));
+        throw new Error(err.error?.message || `HTTP ${resp.status}`);
+      }
+
+      const data    = await resp.json();
+      const refined = data.content.map(b => b.text || '').join('').trim();
+
+      renderDoc(dept, date, handler, subject, refined, needCS, csDept);
+      statusEl.textContent = '✓ 產生完成';
+      statusEl.className   = 'status-msg ok';
+
+    } catch(e) {
+      statusEl.textContent = '錯誤：' + e.message;
+      statusEl.className   = 'status-msg err';
+    } finally {
+      btn.disabled          = false;
+      spinner.style.display = 'none';
+    }
+  }
+
+  function renderDoc(dept, date, handler, subject, content, needCS, csDept){
+    const fmtDate = date.replace(/-/g, '/');
+    const lines   = content.split('\n').filter(l => l.trim());
+    const listHtml = lines.map(l => `<li>${l.trim()}</li>`).join('');
+
+    const countersignHtml = (needCS && csDept)
+      ? `<div class="doc-countersign">
+           <span class="doc-field-label">批示／會簽</span>
+           <span class="doc-field-val">敬會${csDept}</span>
+         </div>`
+      : '';
+
+    const handlerCell = handler
+      ? `<td style="font-size:11px;vertical-align:bottom;padding-bottom:6px">${handler}</td>`
+      : `<td></td>`;
+
+    document.getElementById('doc-output').innerHTML = `
+      <div class="doc">
+        <div class="doc-header-row">
+          <div>
+            <div class="doc-company">銘勁汽車股份有限公司</div>
+            <div class="doc-sub">${dept}</div>
+          </div>
+          <div class="doc-date">${fmtDate}</div>
+        </div>
+
+        <div class="doc-block">
+          <span class="doc-field-label">主旨</span>
+          <span class="doc-field-val">${subject}</span>
+        </div>
+
+        <div class="doc-block">
+          <div class="doc-field-label">說明</div>
+          <ol class="doc-list">${listHtml}</ol>
+        </div>
+
+        <div class="doc-closing">以上，呈請主管核示。</div>
+
+        ${countersignHtml}
+
+        <div>
+          <span class="sign-section-label">簽核</span>
+          <table class="sign-table">
+            <thead>
+              <tr>
+                <th>董事長</th>
+                <th>總經理</th>
+                <th>部門主管</th>
+                <th>承辦</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                ${handlerCell}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+</script>
+
+</body>
+</html>
